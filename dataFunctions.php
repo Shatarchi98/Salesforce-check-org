@@ -1,8 +1,7 @@
 <?php
+// include 'index.php';
 
-
-	function getUserData()
-    {	
+	function getUserData(){	
         $state = $_SESSION['state'];
  
         // Set our GET request URL
@@ -44,15 +43,12 @@
 	        }
         }
 
-        //method to call sObjects
-        // getAllSobjects($state->token, $state->instanceURL);
-
         return $rtnString;
     }
 
     // method to count all sObjects 
     function getAllSobjects(){
-		$rtnString = '<hr><h2>Count of all sObjects</h2>';
+		$rtnString = '<hr><h2>Count of all Custom Objects</h2>';
 
 		$state = $_SESSION['state'];
 		$access_token = $state->token;
@@ -60,8 +56,8 @@
 
 		error_log("access_token: '$access_token'");
 	
-		$query_url = $instance_url.'/services/data/v32.0/sobjects/';
-		// $query_url .= '?q='.urlencode('select id, name from Contact');
+		$query_url = $instance_url.'/services/data/v45.0/tooling/query';
+		$query_url .= '?q='.urlencode('select id, DeveloperName from CustomObject');
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $query_url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -70,12 +66,15 @@
 		    or die("Query API call failed: '$query_url'");
 
 		$records = explode(' ', $query_request_body);
-
-		$rtnString .= sizeof($records).'<br><br>';
+		// var_dump($records[0]);
+		$final_data_json = json_decode($query_request_body);
+		$rtnString .= $final_data_json->size;
 		return $rtnString; 
     }
 
-    // method to count all ApexClasses
+    $GLOBALS['countOfValues'] = array();
+    $GLOBALS['dataSet'] = array("ApexClass"=>"Apex Classes", "ApexTrigger"=>"Triggers", "ApexPage"=>"Visualforce Pages", "ApexComponent"=>"Visualforce Component", "AuraDefinitionBundle"=>"Lightning Components", "StaticResource"=>"Static Resources", "Community"=>"Community", "EmailTemplate"=>"Email Template", "Report"=>"Report", "Dashboard"=>"Dashboard","Profile"=>"Profile", "PermissionSet"=>"Permission Set");
+    // method to get all data
     function getAllSObjectDetails(){
     	$rtnString = '';
 		$state = $_SESSION['state'];
@@ -83,9 +82,8 @@
 		$instance_url = $state->instanceURL;
 
 		error_log("access_token: '$access_token'");
-    	$dataSet = array("ApexClass"=>"Apex Classes", "ApexTrigger"=>"Triggers", "ApexPage"=>"Visualforce Pages", "ApexComponent"=>"Visualforce Component", "AuraDefinitionBundle"=>"Lightning Components", "StaticResource"=>"Static Resources", "Community"=>"Community", "EmailTemplate"=>"Email Template", "Report"=>"Report", "Dashboard"=>"Dashboard","Profile"=>"Profile", "PermissionSet"=>"Permission Set");
 
-	    foreach($dataSet as $key=>$value){
+	    foreach($GLOBALS['dataSet'] as $key=>$value){
 			$query_url = $instance_url.'/services/data/v32.0/query';
 			$rtnString .= '<hr><h2>Count of all ';
 	    	$rtnString .= $value . " </h2>  ";
@@ -112,7 +110,14 @@
 			    die("Missing expected data from ".print_r($query_request_data, true));
 			// Grab the information we're interested in
 			$total_size = $query_request_data['totalSize'];
+
+			// array_push($countValues[], $value);
+
+			// $countOfValues[$value] = $total_size;
+			array_push($GLOBALS['countOfValues'], $value.' = '.$total_size);
+
 			$rtnString .= $total_size . "<br><br>";
+
 
 			$records = $query_request_data['records'];
 			$query_url = '';
@@ -133,7 +138,7 @@
 
 		error_log("access_token: '$access_token'");
 
-		$query_url = $instance_url.'/services/data/v32.0/limit/';
+		$query_url = $instance_url.'/services/data/v45.0/limits';
 		// $query_url .= '?q='.urlencode('select id, name from Contact');
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $query_url);
@@ -141,10 +146,24 @@
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: OAuth '.$access_token));
 		$query_request_body = curl_exec($ch)
 		    or die("Query API call failed: '$query_url'");
+		$final_data_json = json_decode($query_request_body);
 
-		$records = explode(' ', $query_request_body);
-		print_r($records);
-		$rtnString .= sizeof($records).'<br><br>';
+		$rtnString .= "<h3>Data Storage</h3>";
+		$rtnString .= "<h5>Max</h5>";		
+		$rtnString .= (int) $final_data_json->DataStorageMB->Max;
+
+		$rtnString .= "<h5>Remaining</h5>";		
+		$rtnString .= (int) $final_data_json->DataStorageMB->Remaining;
+
+		$rtnString .= "<br>";
+		$rtnString .= "<h3>File Storage</h3>";
+		
+		$rtnString .= "<h5>Max</h5>";		
+		$rtnString .= (int) $final_data_json->FileStorageMB->Max;
+
+		$rtnString .= "<h5>Remaining</h5>";		
+		$rtnString .= (int) $final_data_json->FileStorageMB->Remaining;
+
 		return $rtnString; 
     }
 

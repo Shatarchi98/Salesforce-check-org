@@ -1,3 +1,180 @@
+<style>
+	.container{
+		height: auto;	
+	}
+	.container form{
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.container form input[type=submit]{
+		margin: 10px;
+	}
+	.mainHeading{
+		text-align: center;
+	}
+	.loader {
+		position: absolute;
+		top: 50% !important;
+		left: 50% !important;
+		display: none;
+	}
+	.circles {
+	  position: absolute;
+	  left: -5px;
+	  top: 0;
+	  height: 60px;
+	  width: 180px;
+	}
+	.circles span {
+	  position: absolute;
+	  top: 25px;
+	  height: 12px;
+	  width: 12px;
+	  border-radius: 12px;
+	  background-color: #262626;
+	}
+	.circles span.one {
+	  right: 80px;
+	}
+	.circles span.two {
+	  right: 40px;
+	}
+	.circles span.three {
+	  right: 0px;
+	}
+	.circles {
+	  -webkit-animation: animcircles 0.5s infinite linear;
+	  animation: animcircles 0.5s infinite linear;
+	}
+	@-webkit-keyframes animcircles {
+	  0% {
+	    -webkit-transform: translate(0px, 0px);
+	    transform: translate(0px, 0px);
+	  }
+	  100% {
+	    -webkit-transform: translate(-40px, 0px);
+	    transform: translate(-40px, 0px);
+	  }
+	}
+	@keyframes animcircles {
+	  0% {
+	    -webkit-transform: translate(0px, 0px);
+	    transform: translate(0px, 0px);
+	  }
+	  100% {
+	    -webkit-transform: translate(-40px, 0px);
+	    transform: translate(-40px, 0px);
+	  }
+	}
+	.pacman {
+	  position: absolute;
+	  left: 0;
+	  top: 0;
+	  height: 60px;
+	  width: 60px;
+	}
+	.pacman span {
+	  position: absolute;
+	  top: 0;
+	  left: 0;
+	  height: 60px;
+	  width: 60px;
+	}
+	.pacman span::before {
+	  content: "";
+	  position: absolute;
+	  left: 0;
+	  height: 30px;
+	  width: 60px;
+	  background-color: #0d98ba;
+	}
+	.pacman .top::before {
+	  top: 0;
+	  border-radius: 60px 60px 0px 0px;
+	}
+	.pacman .bottom::before {
+	  bottom: 0;
+	  border-radius: 0px 0px 60px 60px;
+	}
+	.pacman .left::before {
+	  bottom: 0;
+	  height: 60px;
+	  width: 30px;
+	  border-radius: 60px 0px 0px 60px;
+	}
+	.pacman .top {
+	  -webkit-animation: animtop 0.5s infinite;
+	  animation: animtop 0.5s infinite;
+	}
+	@-webkit-keyframes animtop {
+	  0%,
+	  100% {
+	    -webkit-transform: rotate(0deg);
+	    transform: rotate(0deg);
+	  }
+	  50% {
+	    -webkit-transform: rotate(-45deg);
+	    transform: rotate(-45deg);
+	  }
+	}
+	@keyframes animtop {
+	  0%,
+	  100% {
+	    -webkit-transform: rotate(0deg);
+	    transform: rotate(0deg);
+	  }
+	  50% {
+	    -webkit-transform: rotate(-45deg);
+	    transform: rotate(-45deg);
+	  }
+	}
+	.pacman .bottom {
+	  -webkit-animation: animbottom 0.5s infinite;
+	  animation: animbottom 0.5s infinite;
+	}
+	@-webkit-keyframes animbottom {
+	  0%,
+	  100% {
+	    -webkit-transform: rotate(0deg);
+	    transform: rotate(0deg);
+	  }
+	  50% {
+	    -webkit-transform: rotate(45deg);
+	    transform: rotate(45deg);
+	  }
+	}
+	@keyframes animbottom {
+	  0%,
+	  100% {
+	    -webkit-transform: rotate(0deg);
+	    transform: rotate(0deg);
+	  }
+	  50% {
+	    -webkit-transform: rotate(45deg);
+	    transform: rotate(45deg);
+	  }
+	}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<body>
+	<div class="fixed-top loader">
+	  <div class="circles">
+	    <span class="one"></span>
+	    <span class="two"></span>
+	    <span class="three"></span>
+	  </div>
+	  <div class="pacman">
+	    <span class="top"></span>
+	    <span class="bottom"></span>
+	    <span class="left"></span>
+	  </div>
+	</div>	
+<div class="container">
+	
 <?php
 	include 'dataFunctions.php';
 
@@ -8,7 +185,7 @@
  
     // Define our State class
     class State 
-    {
+    {	
         public $passthroughState1;  // Arbitary state we want to pass to the Authentication request
         public $passthroughState2;  // Arbitary state we want to pass to the Authentication request
  
@@ -140,18 +317,7 @@
             {
                 echo "<pre>$message</pre>";
             }
- 
-            // echo "<pre>passthroughState1 = $this->passthroughState1</pre>";
-            // echo "<pre>passthroughState2 = $this->passthroughState2</pre>";
-            // echo "<pre>code = $this->code</pre>";
-            // echo "<pre>token = $this->token</pre>";
-            // echo "<pre>refreshToken = $this->refreshToken</pre>";
-            // echo "<pre>instanceURL = $this->instanceURL</pre>";
-            // echo "<pre>userId = $this->userId</pre>";
-            // echo "<pre>error = $this->error</pre>";
-            // echo "<pre>errorDescription = $this->errorDescription</pre>";
-            // echo "<pre>codeVerifier = $this->codeVerifier</pre>";
-        }
+         }
     }
  
     // If we have not yet initialised state, are resetting or are Authenticating then Initialise State
@@ -176,6 +342,13 @@
     if ($_POST["authenticate"]) // Authenticate button clicked
     {
         doOAUTH();  
+        loginViaAuthenticationCode();
+        if (!loginViaAuthenticationCode())
+        {
+            renderError();
+            return;
+        }
+ 
     }
     else if ($_POST["login_via_code"])  // Login via Authentication Code button clicked
     {
@@ -201,11 +374,13 @@
     {
         // Get the user data from Salesforce
         $userDataHTML = getUserData();
- 		// $userDataHTML .= getAllSobjects();
+ 		$userDataHTML .= getAllSobjects();
  		$userDataHTML .= getAllSObjectDetails();
  		$userDataHTML .= getAllStorageDetails();
+        
         // Render the page passing in the user data
         renderPage($userDataHTML);
+        
     }
     else    // Otherwise render the page
     {
@@ -226,7 +401,7 @@
             </head>
  
             <body>
-                <h1>Salesforce Org Checkup By Techila</h1>
+                <h1 class="mainHeading">Salesforce Org Checkup By Techila</h1>
 <?php
                 // Show the current state values
                 $state->debugState();
@@ -238,11 +413,11 @@
                 }
 ?>
                 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-                    <input type="submit" name="reset" value="Reset App" />
-                    <input type="submit" name="authenticate" value="Authenticate Org" />
-                    <input type="submit" name="login_via_code" value="Login via Authentication Code" />
-                    <input type="submit" name="login_via_refresh_token" value="Login via Refresh Token" />
-                    <input type="submit" name="get_user" value="Start Checkup" />
+                    <input type="submit" name="reset" class="btn btn-success" value="Reset App" />
+                    <input type="submit" name="authenticate" class="btn btn-primary" value="Authenticate Your Org" />
+                    <input type="submit" name="login_via_code" class="btn btn-success" value="Login via Authentication Code" />
+                    <!-- <input type="submit" name="login_via_refresh_token" class="btn btn-info" value="Login via Refresh Token" /> -->
+                    <input type="submit" name="get_user" class="btn btn-primary startBtn" value="Start" />
                 </form>
  
             </body>
@@ -400,7 +575,7 @@
         }
  
         // Debug that we've logged in via the appropriate method
-        echo "<pre>Logged in " . ($isViaRefreshToken ? "via refresh token" : "via authorisation code") . "</pre>";
+        echo "<pre>Logged into ". $instanceURL . ($isViaRefreshToken ? " via refresh token" : "via authorisation code") . "</pre>";
  
         return true;
     }
@@ -445,3 +620,13 @@
 
 
 ?>
+</div>
+<script>
+	$(document).ready(function(){
+		$(".startBtn").click(function(){
+   			$(".loader").css("display", "block"); 
+   			$(".container").css("opacity","0.4");
+		});
+	});
+</script>
+</body>
