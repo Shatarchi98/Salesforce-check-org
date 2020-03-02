@@ -1,6 +1,12 @@
 <?php
-// include 'index.php';
+/*
 
+ * This file contains all methods of getting data from Salesforce.
+ * Written by Techila Global Services [Shatarchi Goyal]
+ * Last Updated on 19-Feb-2020 
+
+*/
+	// method to get logged in user's details
 	function getUserData(){	
         $state = $_SESSION['state'];
  
@@ -48,7 +54,7 @@
 
     // method to count all sObjects 
     function getAllSobjects(){
-		$rtnString = '<hr><h2>Count of all Custom Objects</h2>';
+		$rtnString = '<hr><h2>Count of all Custom Objects and Custom Settings</h2>';
 
 		$state = $_SESSION['state'];
 		$access_token = $state->token;
@@ -57,7 +63,7 @@
 		error_log("access_token: '$access_token'");
 	
 		$query_url = $instance_url.'/services/data/v45.0/tooling/query';
-		$query_url .= '?q='.urlencode('select id, DeveloperName from CustomObject');
+		$query_url .= '?q='.urlencode('select count() from CustomObject');
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $query_url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -65,8 +71,6 @@
 		$query_request_body = curl_exec($ch)
 		    or die("Query API call failed: '$query_url'");
 
-		$records = explode(' ', $query_request_body);
-		// var_dump($records[0]);
 		$final_data_json = json_decode($query_request_body);
 		$rtnString .= $final_data_json->size;
 		return $rtnString; 
@@ -128,6 +132,7 @@
  
     }
 
+    // method to get storage limits [Currently:- Data Storage (total/utilized) & File Storage (total/utilized)]
     function getAllStorageDetails(){
 		
 		$rtnString = '<hr><h2>Storage Details</h2>';
@@ -165,6 +170,272 @@
 		$rtnString .= (int) $final_data_json->FileStorageMB->Remaining;
 
 		return $rtnString; 
+    }
+
+    //method to get fields per object
+    function getAllFieldsFromObject(){
+    	$rtnString = '<hr><h2>Fields per Object</h2>';
+
+		$state = $_SESSION['state'];
+		$access_token = $state->token;
+		$instance_url = $state->instanceURL;
+
+		error_log("access_token: '$access_token'");
+
+		$query_url = $instance_url.'/services/data/v48.0/tooling/sObjects/';
+		// $query_url .= '?q='.urlencode('select id, name from Contact');
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $query_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: OAuth '.$access_token));
+		$query_request_body = curl_exec($ch)
+		    or die("Query API call failed: '$query_url'");
+		$final_data_json = json_decode($query_request_body);
+
+		return $rtnString;	
+    }
+
+    // getting validation rules per object
+    function getValidationRulesPerObject(){
+	    $rtnString = '<hr><h2>validation Rules per Object</h2>';
+
+		$state = $_SESSION['state'];
+		$access_token = $state->token;
+		$instance_url = $state->instanceURL;
+
+		error_log("access_token: '$access_token'");
+
+		$query_url = $instance_url.'/services/data/v45.0/tooling/query';
+		$query_url .= '?q='.urlencode('select id, EntityDefinition.DeveloperName, description from validationRule');
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $query_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: OAuth '.$access_token));
+		$query_request_body = curl_exec($ch)
+		    or die("Query API call failed: '$query_url'");
+		$final_data_json = json_decode($query_request_body);
+
+		// var_dump($final_data_json->records);
+		$objectsArray = array();
+		foreach ($final_data_json->records as $record) {
+			// print_r($record->EntityDefinition->DeveloperName);
+			array_push($objectsArray, $record->EntityDefinition->DeveloperName);
+		}
+
+		$vals = array_count_values($objectsArray);
+
+		
+		
+		$rtnString .= '<table class="table table-striped">
+				    <thead>
+				      <tr>
+				        <th>Object Name</th>
+				        <th>Number of Validation Rules</th>
+				      </tr>
+				    </thead>
+		
+				    <tbody>';
+		foreach ($vals as $key => $value) {
+			$rtnString .= '<tr> <td>'.$key.'</td> <td>'.$value.'</td> </tr>';
+    	}    
+		$rtnString .= '</tbody></table>';
+	  
+		return $rtnString; 	
+    }
+
+    // getting triggers per object
+    function getTriggersPerObject(){
+	    $rtnString = '<hr><h2>Triggers per Object</h2>';
+
+		$state = $_SESSION['state'];
+		$access_token = $state->token;
+		$instance_url = $state->instanceURL;
+
+		error_log("access_token: '$access_token'");
+
+		$query_url = $instance_url.'/services/data/v45.0/tooling/query';
+		$query_url .= '?q='.urlencode('select id, Name, EntityDefinition.DeveloperName from ApexTrigger');
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $query_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: OAuth '.$access_token));
+		$query_request_body = curl_exec($ch)
+		    or die("Query API call failed: '$query_url'");
+		$final_data_json = json_decode($query_request_body);
+
+		$objectNameTriggerNameArray = array();
+		$objectsArray = array();
+		foreach ($final_data_json->records as $record) {
+			array_push($objectsArray, $record->EntityDefinition->DeveloperName);
+
+		}
+		
+
+		$vals = array_count_values($objectsArray);
+
+		
+		
+		$rtnString .= '<table class="table table-striped triggersTable">
+				    <thead>
+				      <tr>
+				        <th>Object Name</th>
+				        <th>Number of Triggers</th>
+				        <th>Name of Trigger(s)</th>
+				      </tr>
+				    </thead>
+		
+				    <tbody>';
+		foreach ($vals as $key => $value) {	
+			if($value > 1){
+				$rtnString .= "<tr class='bg-warning'> <td>".$key."</td> <td data-toggle='tooltip' data-placement='top' title='More than one Triggers'>".$value."</td> <td>".$value->Name."</td> </tr>";
+			}
+			else{
+				$rtnString .= "<tr> <td>".$key."</td> <td>".$value."</td> <td>".$value->Name."</td> </tr>";
+			}
+    	}    
+		$rtnString .= '</tbody></table>';
+	  
+		return $rtnString; 	
+    }
+
+    // getting record types per object (return only objects with more than 1)
+    function getRecordTypesPerObject(){
+	    $rtnString = '<hr><h2>Record Types per Object</h2>';
+
+		$state = $_SESSION['state'];
+		$access_token = $state->token;
+		$instance_url = $state->instanceURL;
+
+		error_log("access_token: '$access_token'");
+
+		$query_url = $instance_url.'/services/data/v45.0/tooling/query';
+		$query_url .= '?q='.urlencode('select id, EntityDefinition.DeveloperName from RecordType');
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $query_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: OAuth '.$access_token));
+		$query_request_body = curl_exec($ch)
+		    or die("Query API call failed: '$query_url'");
+		$final_data_json = json_decode($query_request_body);
+
+		// var_dump($final_data_json->records);
+		$objectsArray = array();
+		foreach ($final_data_json->records as $record) {
+			// print_r($record->EntityDefinition->DeveloperName);
+			array_push($objectsArray, $record->EntityDefinition->DeveloperName);
+		}
+
+		$vals = array_count_values($objectsArray);
+
+		
+		
+		$rtnString .= '<table class="table table-striped">
+				    <thead>
+				      <tr>
+				        <th>Object Name</th>
+				        <th>Number of Record Types</th>
+				      </tr>
+				    </thead>
+		
+				    <tbody>';
+		foreach ($vals as $key => $value) {
+			$rtnString .= '<tr> <td>'.$key.'</td> <td>'.$value.'</td> </tr>';
+    	}    
+		$rtnString .= '</tbody></table>';
+	  
+		return $rtnString; 	
+    }
+
+    // getting Record Types per objects
+    function getPageLayoutPerObject(){
+	    $rtnString = '<hr><h2>Page Layout per Object</h2>';
+
+		$state = $_SESSION['state'];
+		$access_token = $state->token;
+		$instance_url = $state->instanceURL;
+
+		error_log("access_token: '$access_token'");
+
+		$query_url = $instance_url.'/services/data/v45.0/tooling/query';
+		$query_url .= '?q='.urlencode('select id, DeveloperName from CompactLayout');
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $query_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: OAuth '.$access_token));
+		$query_request_body = curl_exec($ch)
+		    or die("Query API call failed: '$query_url'");
+		$final_data_json = json_decode($query_request_body);
+
+		// var_dump($final_data_json);
+		$objectsArray = array();
+		foreach ($final_data_json->records as $record) {
+			// print_r($record->EntityDefinition->DeveloperName);
+			array_push($objectsArray, $record->EntityDefinition->DeveloperName);
+		}
+
+		$vals = array_count_values($objectsArray);
+
+		
+		
+		$rtnString .= '<table class="table table-striped">
+				    <thead>
+				      <tr>
+				        <th>Object Name</th>
+				        <th>Number of Page Layouts</th>
+				      </tr>
+				    </thead>
+		
+				    <tbody>';
+		foreach ($vals as $key => $value) {
+			$rtnString .= '<tr> <td>'.$key.'</td> <td>'.$value.'</td> </tr>';
+    	}    
+		$rtnString .= '</tbody></table>';
+	  
+		return $rtnString; 	
+    }
+
+    // checking if trigger has logic
+    function checkIfTriggerHasLogic(){
+	    $rtnString = '<hr><h2>Triggers With Logic</h2>';
+
+		$state = $_SESSION['state'];
+		$access_token = $state->token;
+		$instance_url = $state->instanceURL;
+
+		error_log("access_token: '$access_token'");
+
+		$query_url = $instance_url.'/services/data/v45.0/tooling/query';
+		$query_url .= '?q='.urlencode('select id, Name, EntityDefinition.DeveloperName, body from ApexTrigger');
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $query_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: OAuth '.$access_token));
+		$query_request_body = curl_exec($ch)
+		    or die("Query API call failed: '$query_url'");
+		$final_data_json = json_decode($query_request_body);
+
+
+		$rtnString .= '<table class="table table-striped triggersTable">
+		    <thead>
+		      <tr>
+		        <th>Object Name</th>
+		        <th>Trigger Name</th>
+		        <th>Trigger has Logic</th>
+		      </tr>
+		    </thead>
+
+		    <tbody>';
+		foreach ($final_data_json->records as $record) {		
+			$triggerBody = (String)$record->Body;
+			if (strpos($triggerBody, 'if(') == true) {
+				$rtnString .= "<tr> <td>".$record->EntityDefinition->DeveloperName."</td> <td>".$record->Name."</td><td>Yes</td> </tr>";		
+			}else{
+				$rtnString .= "<tr> <td>".$record->EntityDefinition->DeveloperName."</td> <td>".$record->Name."</td><td>No</td> </tr>";		
+				}
+    	}    
+		$rtnString .= '</tbody></table>';
+
+		return $rtnString; 	
     }
 
 ?>

@@ -155,8 +155,7 @@
 	    transform: rotate(45deg);
 	  }
 	}
-
-</style>
+</style> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
@@ -177,6 +176,7 @@
 	
 <?php
 	include 'dataFunctions.php';
+
 
     // Report all errors (ignore Notices)
     error_reporting(E_ALL & ~E_NOTICE);
@@ -377,7 +377,14 @@
  		$userDataHTML .= getAllSobjects();
  		$userDataHTML .= getAllSObjectDetails();
  		$userDataHTML .= getAllStorageDetails();
-        
+        $userDataHTML .= getAllFieldsFromObject();
+        $userDataHTML .= getValidationRulesPerObject();
+        $userDataHTML .= getTriggersPerObject();
+        $userDataHTML .= getRecordTypesPerObject();
+        $userDataHTML .= getPageLayoutPerObject();
+        $userDataHTML .= checkIfTriggerHasLogic();
+
+
         // Render the page passing in the user data
         renderPage($userDataHTML);
         
@@ -389,7 +396,9 @@
  
     // Render the Page
     function renderPage($userDataHTML = NULL)
-    {
+    {       
+        $loginPath = array('login.salesforce.com', 'test.salesforce.com');
+
         $state = $_SESSION['state'];
  
         echo "<!DOCTYPE html>";
@@ -411,13 +420,18 @@
                 {
                     echo $userDataHTML;
                 }
-?>
+
+?>          
                 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+                    <select id="type_of_org" name="type_of_org" class="custom-select" style="max-width: 20%; box-shadow: none;">            
+                        <option value="production" selected="selected">Production/Developer</option>
+                        <option value="sandbox">Sandbox</option>
+                    </select>
                     <input type="submit" name="reset" class="btn btn-success" value="Reset App" />
                     <input type="submit" name="authenticate" class="btn btn-primary" value="Authenticate Your Org" />
                     <input type="submit" name="login_via_code" class="btn btn-success" value="Login via Authentication Code" />
                     <!-- <input type="submit" name="login_via_refresh_token" class="btn btn-info" value="Login via Refresh Token" /> -->
-                    <input type="submit" name="get_user" class="btn btn-primary startBtn" value="Start" />
+                    <input type="submit" name="get_user" class="btn btn-primary startBtn" value="Start Checkup" />
                 </form>
  
             </body>
@@ -435,8 +449,15 @@
  
         // Set the Authentication URL
         // Note we pass in the code challenge
-        $href = "https://login.salesforce.com/services/oauth2/authorize?response_type=code" . 
-                "&client_id=" . getClientId() . 
+
+        if($_POST["type_of_org"] == 'production'){
+            $href = "https://login.salesforce.com/services/oauth2/authorize?response_type=code";    
+        }else if($_POST["type_of_org"] == 'sandbox'){
+            $href = "https://test.salesforce.com/services/oauth2/authorize?response_type=code";
+        }
+
+        // $href = "https://test.salesforce.com/services/oauth2/authorize?response_type=code" . 
+        $href .= "&client_id=" . getClientId() . 
                 "&redirect_uri=" . getCallBackURL() . 
                 "&scope=api refresh_token" . 
                 "&prompt=consent" . 
@@ -448,6 +469,7 @@
         $state->passthroughState2 = NULL;
  
         // Perform the redirect
+        loginViaAuthenticationCode();
         header("location: $href");
     }
  
@@ -498,9 +520,14 @@
     function doLogin($fields, $isViaRefreshToken)
     {
         $state = $_SESSION['state'];
- 
+
+        if($_POST["type_of_org"] == 'production'){
+            $postURL = 'https://login.salesforce.com/services/oauth2/token';
+        }else if($_POST["type_of_org"] == 'sandbox'){
+            $postURL = 'https://test.salesforce.com/services/oauth2/token';
+        }
         // Set the POST url to call
-        $postURL = 'https://login.salesforce.com/services/oauth2/token';
+        // $postURL = 'https://test.salesforce.com/services/oauth2/token';
  
         // Header options
         $headerOpts = array('Content-type: application/x-www-form-urlencoded');
