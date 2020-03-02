@@ -2,8 +2,8 @@
 /*
 
  * This file contains all methods of getting data from Salesforce.
- * Written by Techila Global Services [Shatarchi Goyal]
- * Last Updated on 19-Feb-2020 
+ * Written by Shatarchi Goyal
+ * Last Updated on 02-Mar-2020 
 
 */
 	// method to get logged in user's details

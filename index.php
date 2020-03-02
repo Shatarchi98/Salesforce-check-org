@@ -1,3 +1,13 @@
+<?php
+/*
+
+ * This is the index file of the Project. This file calls all actions and handles input from user
+ * Written by Shatarchi Goyal
+ * Last Updated on 02-Mar-2020 
+
+*/
+
+?>
 <style>
 	.container{
 		height: auto;	
